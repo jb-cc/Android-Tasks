@@ -1,0 +1,3 @@
+# This is my Project for the Mobile Coding course of the winter semester 2023.
+
+This app will be a basic to-do App that resembles the google Tasks app, so nothing too complicated. You can check out the figma prototype [here](https://www.figma.com/proto/2a3HVMJZMO3hoVEfg4YENk/Material-3-Design-Kit-(Community)?page-id=54696%3A25111&type=design&node-id=54703-26426&viewport=1127%2C-578%2C0.87&t=TvRL3cgrGUS5YFp1-1&scaling=scale-down&starting-point-node-id=54703%3A26426&show-proto-sidebar=1&mode=design)
