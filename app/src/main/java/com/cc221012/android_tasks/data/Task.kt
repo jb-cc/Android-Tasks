@@ -8,9 +8,9 @@ import java.time.LocalDateTime
 @Entity
 data class Task(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    var name: String,
-    var description: String?,
-    var isCompleted: Boolean = false,
-    var dueDate: LocalDateTime? = null,
-    var hasReminder: Boolean = false,
+    val name: String,
+    val description: String?,
+    val isCompleted: Boolean = false,
+    val dueDate: LocalDateTime? = null,
+    val hasReminder: Boolean = false,
 )
