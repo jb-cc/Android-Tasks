@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId = "com.cc221012.android_tasks"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
