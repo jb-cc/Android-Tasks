@@ -1,4 +1,4 @@
-package com.cc221012.android_tasks.ui
+package com.cc221012.android_tasks.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +7,7 @@ import com.cc221012.android_tasks.data.TaskDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class MainViewModel(private val dao: TaskDao): ViewModel() {
@@ -37,7 +38,7 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
     }
     fun getTasks(){
         viewModelScope.launch {
-            dao.getTasks()
+            dao.getTasks().collect() { allTasks -> }
         }
     }
 
