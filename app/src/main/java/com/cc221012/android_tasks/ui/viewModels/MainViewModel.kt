@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cc221012.android_tasks.data.Task
 import com.cc221012.android_tasks.data.TaskDao
 import com.cc221012.android_tasks.ui.state.MainViewState
+import com.cc221012.android_tasks.ui.views.Tab
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,5 +62,9 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
                 _taskListState.value = MainViewState(tasks = tasks)
             }
         }
+    }
+
+    fun updateSelectedTab(tab: Tab) {
+        _taskListState.value = _taskListState.value.copy(selectedTab = tab)
     }
 }
