@@ -13,5 +13,7 @@ data class Task(
     val isCompleted: Boolean = false,
     val dueDate: LocalDateTime? = null,
     val hasReminder: Boolean = false,
+    val reminderDate: LocalDateTime? = null,
+    val category: String? = null,
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 )
