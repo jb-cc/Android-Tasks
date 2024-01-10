@@ -14,11 +14,10 @@ import kotlinx.coroutines.launch
 class MainViewModel(private val dao: TaskDao): ViewModel() {
 
     // necessary variables for state
-    private val _taskState = MutableStateFlow(Task("", null, false, null, false))
+    private val _taskState = MutableStateFlow(Task("", null, false, null, false, null, null))
     val taskState: StateFlow<Task> = _taskState.asStateFlow()
     private val _taskListState = MutableStateFlow(MainViewState())
     val tasksListState: StateFlow<MainViewState> = _taskListState.asStateFlow()
-
 
     // CRUD Operations to be called from Dao
 
@@ -39,6 +38,7 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
             dao.deleteTask(task)
         }
     }
+
     fun getTasks(){
         viewModelScope.launch {
             dao.getTasks().collect { allTasks ->
@@ -47,5 +47,19 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
         }
     }
 
+    fun getTasksByCompletion(isCompleted: Boolean){
+        viewModelScope.launch {
+            dao.getTasksByStatus(isCompleted).collect { tasks ->
+                _taskListState.value = MainViewState(tasks = tasks)
+            }
+        }
+    }
 
+    fun getTasksByCategory(category: String){
+        viewModelScope.launch {
+            dao.getTasksByCategory(category).collect { tasks ->
+                _taskListState.value = MainViewState(tasks = tasks)
+            }
+        }
+    }
 }
