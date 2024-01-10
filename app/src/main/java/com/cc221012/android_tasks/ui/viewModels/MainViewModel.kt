@@ -16,8 +16,8 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
     // necessary variables for state
     private val _taskState = MutableStateFlow(Task("", null, false, null, false))
     val taskState: StateFlow<Task> = _taskState.asStateFlow()
-    private val _tasks = MutableStateFlow(MainViewState())
-    val tasks: StateFlow<MainViewState> = _tasks.asStateFlow()
+    private val _taskListState = MutableStateFlow(MainViewState())
+    val tasksListState: StateFlow<MainViewState> = _taskListState.asStateFlow()
 
 
     // CRUD Operations to be called from Dao
@@ -41,7 +41,9 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
     }
     fun getTasks(){
         viewModelScope.launch {
-            dao.getTasks().collect() { allTasks -> }
+            dao.getTasks().collect { allTasks ->
+                _taskListState.value = MainViewState(tasks = allTasks)
+            }
         }
     }
 
