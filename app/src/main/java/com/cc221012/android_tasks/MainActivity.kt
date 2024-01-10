@@ -45,5 +45,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        mainViewModel.getTasksByCompletion(false)
     }
 }
