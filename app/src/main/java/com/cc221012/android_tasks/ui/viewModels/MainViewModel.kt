@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 class MainViewModel(private val dao: TaskDao): ViewModel() {
 
@@ -22,8 +23,9 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
 
     // CRUD Operations to be called from Dao
 
-    fun createTask(task: Task){
+    fun createTask(name: String, description: String?, dueDate: LocalDateTime?) {
         viewModelScope.launch {
+            val task = Task(name = name, description = description, dueDate = dueDate)
             dao.createTask(task)
         }
     }
@@ -66,5 +68,13 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
 
     fun updateSelectedTab(tab: Tab) {
         _taskListState.value = _taskListState.value.copy(selectedTab = tab)
+    }
+
+    fun showNewTaskWindow() {
+        _taskListState.value = _taskListState.value.copy(newTaskWindowOpened = true)
+    }
+
+    fun hideNewTaskWindow() {
+        _taskListState.value = _taskListState.value.copy(newTaskWindowOpened = false)
     }
 }
