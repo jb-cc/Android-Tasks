@@ -23,5 +23,9 @@ interface TaskDao {
     @Query("SELECT * FROM tasks")
     fun getTasks(): Flow<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE isCompleted = :isCompleted")
+    fun getTasksByStatus(isCompleted: Boolean): Flow<List<Task>>
 
+    @Query("SELECT * FROM tasks WHERE category = :category")
+    fun getTasksByCategory(category: String): Flow<List<Task>>
 }
