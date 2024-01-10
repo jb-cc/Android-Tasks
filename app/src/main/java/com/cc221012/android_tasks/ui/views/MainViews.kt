@@ -2,6 +2,7 @@ package com.cc221012.android_tasks.ui.views
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
@@ -17,14 +18,20 @@ sealed class Tab(val route: String) {
 
 @Composable
 fun CurrentTasksView(tasks: List<Task>) {
-    // TODO: Implement the UI for the current tasks view
-    Text(text = "Current Tasks")
+    LazyColumn {
+        items(tasks.size) { index ->
+            Text(text = tasks[index].name)
+        }
+    }
 }
 
 @Composable
 fun CompletedTasksView(tasks: List<Task>) {
-    // TODO: Implement the UI for the completed tasks view
-    Text(text = "Completed Tasks")
+    LazyColumn {
+        items(tasks.size) { index ->
+            Text(text = tasks[index].name)
+        }
+    }
 }
 
 @Composable
