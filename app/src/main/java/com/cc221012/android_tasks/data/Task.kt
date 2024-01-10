@@ -10,7 +10,7 @@ data class Task(
 
     val name: String,
     val description: String?,
-    val isCompleted: Boolean = false,
+    var isCompleted: Boolean = false,
     val dueDate: LocalDateTime? = null,
     val hasReminder: Boolean = false,
     val reminderDate: LocalDateTime? = null,

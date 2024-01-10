@@ -1,32 +1,46 @@
 package com.cc221012.android_tasks.ui.views
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.cc221012.android_tasks.data.Task
 import com.cc221012.android_tasks.ui.state.MainViewState
 import com.cc221012.android_tasks.ui.viewModels.MainViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import androidx.compose.runtime.key
+
 
 sealed class Tab(val route: String) {
     object CurrentTasks : Tab("currentTasks")
@@ -34,19 +48,62 @@ sealed class Tab(val route: String) {
 }
 
 @Composable
-fun CurrentTasksView(tasks: List<Task>) {
+fun CurrentTasksView(tasks: List<Task>, onTaskClick: (Task) -> Unit) {
     LazyColumn {
         items(tasks.size) { index ->
-            Text(text = tasks[index].name)
+            TaskListItem(tasks[index], onTaskClick)
         }
     }
 }
 
 @Composable
-fun CompletedTasksView(tasks: List<Task>) {
+fun CompletedTasksView(tasks: List<Task>, onTaskClick: (Task) -> Unit) {
     LazyColumn {
         items(tasks.size) { index ->
-            Text(text = tasks[index].name)
+            TaskListItem(tasks[index], onTaskClick)
+        }
+    }
+}
+
+
+
+@Composable
+fun TaskListItem(task: Task, onTaskClick: (Task) -> Unit) {
+    key(task.id) {
+        val coroutineScope = rememberCoroutineScope()
+        var isChecked by remember { mutableStateOf(task.isCompleted) }
+
+        LaunchedEffect(isChecked) {
+            if (isChecked != task.isCompleted) {
+                coroutineScope.launch {
+                    delay(200)
+                    // Create a new Task object with the updated isCompleted property
+                    val updatedTask = task.copy(isCompleted = isChecked)
+                    onTaskClick(updatedTask)
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.clickable { onTaskClick(task) } // Apply clickable to the Column
+            ) {
+                Text(task.name)
+                if (task.description != null) {
+                    Text(task.description)
+                }
+            }
+            Checkbox(
+                checked = isChecked,
+                onCheckedChange = { newIsChecked ->
+                    isChecked = newIsChecked
+                }
+            )
         }
     }
 }
@@ -75,8 +132,8 @@ fun MainView(mainViewModel: MainViewModel) {
             }
 
             when (mainViewState.selectedTab) {
-                is Tab.CurrentTasks -> CurrentTasksView(mainViewState.tasks)
-                is Tab.CompletedTasks -> CompletedTasksView(mainViewState.tasks.filter { it.isCompleted })
+                is Tab.CurrentTasks -> CurrentTasksView(mainViewState.tasks, mainViewModel::updateTask)
+                is Tab.CompletedTasks -> CompletedTasksView(mainViewState.tasks.filter { it.isCompleted }, mainViewModel::updateTask)
             }
         }
     }
