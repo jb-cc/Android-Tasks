@@ -41,8 +41,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val mainViewState by mainViewModel.tasksListState.collectAsState()
-                    MainView(mainViewState)
+                    MainView(mainViewModel)
                 }
             }
         }
