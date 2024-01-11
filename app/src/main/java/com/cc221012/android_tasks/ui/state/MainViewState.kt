@@ -5,9 +5,8 @@ import com.cc221012.android_tasks.ui.views.Tab
 
 data class MainViewState(
     val tasks: List<Task> = emptyList(),
-    val selectedTab: Tab = Tab.CurrentTasks,
+    val selectedTab: String = Tab.CurrentTasks.route,
     val newTaskWindowOpened: Boolean = false,
     val editWindowOpened: Boolean = false,
     val dueDateWindowOpened: Boolean = false
-
 )

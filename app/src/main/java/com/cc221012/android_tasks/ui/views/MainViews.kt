@@ -1,6 +1,7 @@
 package com.cc221012.android_tasks.ui.views
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import androidx.compose.runtime.key
+import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.flow.map
 
 
@@ -49,19 +51,19 @@ sealed class Tab(val route: String) {
 }
 
 @Composable
-fun CurrentTasksView(tasks: List<Task>, onTaskClick: (Task) -> Unit) {
+fun CurrentTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit) {
     LazyColumn {
         items(tasks.size) { index ->
-            TaskListItem(tasks[index], onTaskClick)
+            TaskListItem(tasks[index], onCheckboxClick)
         }
     }
 }
 
 @Composable
-fun CompletedTasksView(tasks: List<Task>, onTaskClick: (Task) -> Unit) {
+fun CompletedTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit) {
     LazyColumn {
         items(tasks.size) { index ->
-            TaskListItem(tasks[index], onTaskClick)
+            TaskListItem(tasks[index], onCheckboxClick)
         }
     }
 }
@@ -69,18 +71,17 @@ fun CompletedTasksView(tasks: List<Task>, onTaskClick: (Task) -> Unit) {
 
 
 @Composable
-fun TaskListItem(task: Task, onTaskClick: (Task) -> Unit) {
+fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
+    var isChecked by remember(task.id) { mutableStateOf(task.isCompleted) }
+
     key(task.id) {
-        val coroutineScope = rememberCoroutineScope()
-        var isChecked by remember { mutableStateOf(task.isCompleted) }
-
         LaunchedEffect(isChecked) {
             if (isChecked != task.isCompleted) {
                 coroutineScope.launch {
                     delay(200)
-                    // Create a new Task object with the updated isCompleted property
-                    val updatedTask = task.copy(isCompleted = isChecked)
-                    onTaskClick(updatedTask)
+                    // Call onCheckboxClick to update the task's completion status
+                    onCheckboxClick(task)
                 }
             }
         }
@@ -92,7 +93,8 @@ fun TaskListItem(task: Task, onTaskClick: (Task) -> Unit) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
-                modifier = Modifier.clickable { onTaskClick(task) } // Apply clickable to the Column
+                modifier = Modifier
+                    .weight(1f)
             ) {
                 Text(task.name)
                 if (task.description != null) {
@@ -103,18 +105,26 @@ fun TaskListItem(task: Task, onTaskClick: (Task) -> Unit) {
                 checked = isChecked,
                 onCheckedChange = { newIsChecked ->
                     isChecked = newIsChecked
+                    Log.d("MainView", "=================================================")
+                    Log.d("MainView", "Checkbox clicked, new value: $newIsChecked")
                 }
             )
         }
     }
 }
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(mainViewModel: MainViewModel) {
+    val coroutineScope = rememberCoroutineScope()
+    Log.d("MainView", "MainView composed")
+
     val mainViewState by mainViewModel.tasksListState.collectAsState()
-    var selectedTab by remember { mutableStateOf<Tab>(Tab.CurrentTasks) }
+    Log.d("MainView", "MainView collecting tasksListState")
+
+    var selectedTab by rememberSaveable { mutableStateOf<String>(Tab.CurrentTasks.route) }
+    Log.d("MainView", "MainViewState: $mainViewState")
+    Log.d("MainView", "=======================================================")
 
     Scaffold(
         floatingActionButton = {
@@ -125,19 +135,34 @@ fun MainView(mainViewModel: MainViewModel) {
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             TabRow(selectedTabIndex = when (selectedTab) {
-                is Tab.CurrentTasks -> 0
-                is Tab.CompletedTasks -> 1
+                Tab.CurrentTasks.route -> 0
+                Tab.CompletedTasks.route -> 1
+                else -> 0
             }) {
-                Tab(text = { Text("Current Tasks") }, selected = selectedTab is Tab.CurrentTasks, onClick = { selectedTab = Tab.CurrentTasks; mainViewModel.updateSelectedTab(Tab.CurrentTasks); mainViewModel.getTasksByCompletion(false) })
-                Tab(text = { Text("Completed Tasks") }, selected = selectedTab is Tab.CompletedTasks, onClick = { selectedTab = Tab.CompletedTasks; mainViewModel.updateSelectedTab(Tab.CompletedTasks); mainViewModel.getTasksByCompletion(true) })
-            }
+                Tab(text = { Text("Current Tasks") }, selected = selectedTab == Tab.CurrentTasks.route, onClick = {
+                    selectedTab = Tab.CurrentTasks.route
+                    coroutineScope.launch {
+                        mainViewModel.getTasksByCompletion(false)
+                    }
+                })
+                Tab(text = { Text("Completed Tasks") }, selected = selectedTab == Tab.CompletedTasks.route, onClick = {
+                    selectedTab = Tab.CompletedTasks.route
+                    coroutineScope.launch {
+                        mainViewModel.getTasksByCompletion(true)
+                    }
+                })}
 
-            when (mainViewState.selectedTab) {
-                is Tab.CurrentTasks -> CurrentTasksView(mainViewState.tasks, mainViewModel::updateTask)
-                is Tab.CompletedTasks -> CompletedTasksView(mainViewState.tasks.filter { it.isCompleted }, mainViewModel::updateTask)
+            when (selectedTab) {
+                Tab.CurrentTasks.route -> CurrentTasksView(mainViewState.tasks.filter { !it.isCompleted }, mainViewModel::updateTaskCompletionStatus)
+                Tab.CompletedTasks.route -> CompletedTasksView(mainViewState.tasks.filter { it.isCompleted }, mainViewModel::updateTaskCompletionStatus)
+                else -> {} // handle other cases
             }
         }
     }
+
+
+
+
 
 
 

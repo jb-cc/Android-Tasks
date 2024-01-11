@@ -14,10 +14,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import com.cc221012.android_tasks.data.TasksDatabase
 import com.cc221012.android_tasks.ui.viewModels.MainViewModel
 import com.cc221012.android_tasks.ui.views.MainView
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val db by lazy {
@@ -38,7 +40,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme(colorScheme = if (isSystemInDarkTheme()) darkColorScheme() else MaterialTheme.colorScheme) {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -47,6 +48,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        mainViewModel.getTasksByCompletion(false)
+        lifecycleScope.launch {
+            mainViewModel.getTasksByCompletion(false)
+        }
     }
 }

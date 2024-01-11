@@ -1,5 +1,6 @@
 package com.cc221012.android_tasks.ui.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cc221012.android_tasks.data.Task
@@ -9,7 +10,8 @@ import com.cc221012.android_tasks.ui.views.Tab
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
@@ -36,6 +38,15 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
         }
     }
 
+    // please for the love of god, work
+    fun updateTaskCompletionStatus(task: Task) {
+        viewModelScope.launch {
+            val updatedTask = task.copy(isCompleted = !task.isCompleted)
+            dao.updateTask(updatedTask)
+            getTasks()
+        }
+    }
+
     fun deleteTask(task: Task){
         viewModelScope.launch {
             dao.deleteTask(task)
@@ -50,12 +61,11 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
         }
     }
 
-    fun getTasksByCompletion(isCompleted: Boolean){
-        viewModelScope.launch {
-            dao.getTasksByStatus(isCompleted).collect { tasks ->
-                _taskListState.value = MainViewState(tasks = tasks)
-            }
-        }
+
+    suspend fun getTasksByCompletion(isCompleted: Boolean){
+        val tasks = dao.getTasksByStatus(isCompleted).first()
+        _taskListState.value = MainViewState(tasks = tasks)
+        Log.d("MainViewModel", "getTasksByCompletion | Fetched tasks: $tasks, Completion status: $isCompleted")
     }
 
     fun getTasksByCategory(category: String){
@@ -67,7 +77,7 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
     }
 
     fun updateSelectedTab(tab: Tab) {
-        _taskListState.value = _taskListState.value.copy(selectedTab = tab)
+        _taskListState.value = _taskListState.value.copy(selectedTab = tab.route)
     }
 
     fun showNewTaskWindow() {
