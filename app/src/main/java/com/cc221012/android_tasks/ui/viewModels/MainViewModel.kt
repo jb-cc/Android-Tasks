@@ -32,7 +32,7 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
         }
     }
 
-    fun updateTask(task: Task){
+    fun editTask(task: Task) {
         viewModelScope.launch {
             dao.updateTask(task)
         }
