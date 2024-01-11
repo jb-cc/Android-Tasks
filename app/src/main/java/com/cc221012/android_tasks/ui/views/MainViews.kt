@@ -40,6 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import androidx.compose.runtime.key
+import kotlinx.coroutines.flow.map
 
 
 sealed class Tab(val route: String) {
@@ -113,10 +114,7 @@ fun TaskListItem(task: Task, onTaskClick: (Task) -> Unit) {
 @Composable
 fun MainView(mainViewModel: MainViewModel) {
     val mainViewState by mainViewModel.tasksListState.collectAsState()
-    val selectedTabIndex = when (mainViewState.selectedTab) {
-        is Tab.CurrentTasks -> 0
-        is Tab.CompletedTasks -> 1
-    }
+    var selectedTab by remember { mutableStateOf<Tab>(Tab.CurrentTasks) }
 
     Scaffold(
         floatingActionButton = {
@@ -126,9 +124,12 @@ fun MainView(mainViewModel: MainViewModel) {
         }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TabRow(selectedTabIndex = selectedTabIndex) {
-                Tab(text = { Text("Current Tasks") }, selected = selectedTabIndex == 0, onClick = { mainViewModel.updateSelectedTab(Tab.CurrentTasks); mainViewModel.getTasksByCompletion(false) })
-                Tab(text = { Text("Completed Tasks") }, selected = selectedTabIndex == 1, onClick = { mainViewModel.updateSelectedTab(Tab.CompletedTasks); mainViewModel.getTasksByCompletion(true) })
+            TabRow(selectedTabIndex = when (selectedTab) {
+                is Tab.CurrentTasks -> 0
+                is Tab.CompletedTasks -> 1
+            }) {
+                Tab(text = { Text("Current Tasks") }, selected = selectedTab is Tab.CurrentTasks, onClick = { selectedTab = Tab.CurrentTasks; mainViewModel.updateSelectedTab(Tab.CurrentTasks); mainViewModel.getTasksByCompletion(false) })
+                Tab(text = { Text("Completed Tasks") }, selected = selectedTab is Tab.CompletedTasks, onClick = { selectedTab = Tab.CompletedTasks; mainViewModel.updateSelectedTab(Tab.CompletedTasks); mainViewModel.getTasksByCompletion(true) })
             }
 
             when (mainViewState.selectedTab) {
@@ -137,6 +138,9 @@ fun MainView(mainViewModel: MainViewModel) {
             }
         }
     }
+
+
+
 
 
     if (mainViewState.newTaskWindowOpened) {
@@ -170,5 +174,4 @@ fun MainView(mainViewModel: MainViewModel) {
             }
         }
     }
-
 }
