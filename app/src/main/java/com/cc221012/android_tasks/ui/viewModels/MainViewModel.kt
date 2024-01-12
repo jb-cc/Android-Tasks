@@ -35,9 +35,17 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
     fun editTask(task: Task) {
         viewModelScope.launch {
             dao.updateTask(task)
+            getTasks()
         }
     }
 
+    fun setTaskBeingEdited(task: Task) {
+        _taskListState.value = _taskListState.value.copy(taskBeingEdited = task, editWindowOpened = true)
+    }
+
+    fun hideEditWindow() {
+        _taskListState.value = _taskListState.value.copy(taskBeingEdited = null, editWindowOpened = false)
+    }
     // please for the love of god, work
     fun updateTaskCompletionStatus(task: Task) {
         viewModelScope.launch {

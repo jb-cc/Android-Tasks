@@ -1,5 +1,6 @@
 package com.cc221012.android_tasks.ui.views
 
+
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.clickable
@@ -18,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TabRow
@@ -51,27 +53,25 @@ sealed class Tab(val route: String) {
 }
 
 @Composable
-fun CurrentTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit) {
+fun CurrentTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task) -> Unit) {
     LazyColumn {
         items(tasks.size) { index ->
-            TaskListItem(tasks[index], onCheckboxClick)
+            TaskListItem(tasks[index], onCheckboxClick, onTaskClick)
         }
     }
 }
 
 @Composable
-fun CompletedTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit) {
+fun CompletedTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task) -> Unit) {
     LazyColumn {
         items(tasks.size) { index ->
-            TaskListItem(tasks[index], onCheckboxClick)
+            TaskListItem(tasks[index], onCheckboxClick, onTaskClick)
         }
     }
 }
 
-
-
 @Composable
-fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit) {
+fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task) -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     var isChecked by remember(task.id) { mutableStateOf(task.isCompleted) }
 
@@ -89,11 +89,13 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .clickable { onTaskClick(task) },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .weight(1f)
             ) {
                 Text(task.name)
@@ -105,13 +107,13 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit) {
                 checked = isChecked,
                 onCheckedChange = { newIsChecked ->
                     isChecked = newIsChecked
-                    Log.d("MainView", "=================================================")
                     Log.d("MainView", "Checkbox clicked, new value: $newIsChecked")
                 }
             )
         }
     }
 }
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -150,23 +152,16 @@ fun MainView(mainViewModel: MainViewModel) {
                     coroutineScope.launch {
                         mainViewModel.getTasksByCompletion(true)
                     }
-                })}
+                })
+            }
 
             when (selectedTab) {
-                Tab.CurrentTasks.route -> CurrentTasksView(mainViewState.tasks.filter { !it.isCompleted }, mainViewModel::updateTaskCompletionStatus)
-                Tab.CompletedTasks.route -> CompletedTasksView(mainViewState.tasks.filter { it.isCompleted }, mainViewModel::updateTaskCompletionStatus)
+                Tab.CurrentTasks.route -> CurrentTasksView(mainViewState.tasks.filter { !it.isCompleted }, mainViewModel::updateTaskCompletionStatus, mainViewModel::setTaskBeingEdited)
+                Tab.CompletedTasks.route -> CompletedTasksView(mainViewState.tasks.filter { it.isCompleted }, mainViewModel::updateTaskCompletionStatus, mainViewModel::setTaskBeingEdited)
                 else -> {} // handle other cases
             }
         }
     }
-
-
-
-
-
-
-
-
 
     if (mainViewState.newTaskWindowOpened) {
         Dialog(onDismissRequest = { mainViewModel.hideNewTaskWindow() }) {
@@ -195,6 +190,52 @@ fun MainView(mainViewModel: MainViewModel) {
                 }
                 Button(onClick = { mainViewModel.hideNewTaskWindow() }) {
                     Text("Cancel")
+                }
+            }
+        }
+    }
+
+    if (mainViewState.editWindowOpened) {
+        val taskBeingEdited = mainViewState.taskBeingEdited
+        if (taskBeingEdited != null) {
+            Dialog(onDismissRequest = { mainViewModel.hideEditWindow() }) {
+
+                MaterialTheme{
+                    Column {
+                        var taskName by remember { mutableStateOf(taskBeingEdited.name) }
+                        var taskDescription by remember {
+                            mutableStateOf(
+                                taskBeingEdited.description ?: ""
+                            )
+                        }
+                        var dueDate by remember { mutableStateOf(taskBeingEdited.dueDate) }
+
+                        TextField(
+                            value = taskName,
+                            onValueChange = { taskName = it },
+                            label = { Text("Task Name") }
+                        )
+                        TextField(
+                            value = taskDescription,
+                            onValueChange = { taskDescription = it },
+                            label = { Text("Task Description (optional)") }
+                        )
+                        // TODO: Add a date picker for the due date
+                        Button(onClick = {
+                            val updatedTask = taskBeingEdited.copy(
+                                name = taskName,
+                                description = taskDescription,
+                                dueDate = dueDate
+                            )
+                            mainViewModel.editTask(updatedTask)
+                            mainViewModel.hideEditWindow()
+                        }) {
+                            Text("Update Task")
+                        }
+                        Button(onClick = { mainViewModel.hideEditWindow() }) {
+                            Text("Cancel")
+                        }
+                    }
                 }
             }
         }

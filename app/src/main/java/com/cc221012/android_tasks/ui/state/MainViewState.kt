@@ -8,5 +8,6 @@ data class MainViewState(
     val selectedTab: String = Tab.CurrentTasks.route,
     val newTaskWindowOpened: Boolean = false,
     val editWindowOpened: Boolean = false,
-    val dueDateWindowOpened: Boolean = false
+    val dueDateWindowOpened: Boolean = false,
+    val taskBeingEdited: Task? = null
 )
