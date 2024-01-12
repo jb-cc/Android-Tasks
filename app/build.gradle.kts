@@ -68,6 +68,13 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+
+    // Material Design
+    implementation("androidx.compose.material3:material3:1.1.2")
+    implementation("androidx.compose.material3:material3-window-size-class:1.1.2")
+    implementation("androidx.compose.material3:material3-adaptive:1.0.0-alpha04")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.0.0-alpha02")
+
     // ROOM
     implementation("androidx.room:room-ktx:2.5.2")
     ksp("androidx.room:room-compiler:2.5.0")
