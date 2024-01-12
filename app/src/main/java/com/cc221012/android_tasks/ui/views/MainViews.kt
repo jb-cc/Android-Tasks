@@ -1,6 +1,5 @@
 package com.cc221012.android_tasks.ui.views
 
-
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.clickable
@@ -21,9 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,7 +44,6 @@ import java.time.LocalDateTime
 import androidx.compose.runtime.key
 import androidx.compose.runtime.saveable.rememberSaveable
 import kotlinx.coroutines.flow.map
-
 
 sealed class Tab(val route: String) {
     object CurrentTasks : Tab("currentTasks")
@@ -231,6 +229,12 @@ fun MainView(mainViewModel: MainViewModel) {
                             mainViewModel.hideEditWindow()
                         }) {
                             Text("Update Task")
+                        }
+                        Button(onClick = {
+                            mainViewModel.deleteTask(taskBeingEdited)
+                            mainViewModel.hideEditWindow()
+                        }) {
+                            Text("Delete Task")
                         }
                         Button(onClick = { mainViewModel.hideEditWindow() }) {
                             Text("Cancel")
