@@ -22,6 +22,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
@@ -376,7 +378,9 @@ fun MainView(mainViewModel: MainViewModel) {
                         label = { Text("Task Description") }
                     )
 
-                    Row {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
                         IconButton(onClick = { dateDialogState.show() }) {
                             Icon(Icons.Default.DateRange, contentDescription = "Pick Date")
                         }
@@ -393,8 +397,9 @@ fun MainView(mainViewModel: MainViewModel) {
                             mainViewModel.editTask(updatedTask)
                             mainViewModel.hideEditWindow()
                         }) {
-                            Icon(Icons.Default.Add, contentDescription = "Update Task")
+                            Icon(Icons.Default.Done, contentDescription = "Update Task")
                         }
+                        Spacer(modifier = Modifier.width(92.dp))
                         IconButton(onClick = {
                             mainViewModel.deleteTask(taskBeingEdited)
                             mainViewModel.hideEditWindow()
