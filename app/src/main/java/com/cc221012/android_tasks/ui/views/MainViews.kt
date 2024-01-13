@@ -158,17 +158,20 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, mainViewModel: Mai
                             .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp))
                             .padding(4.dp)
                     ) {
-                        Column {
+                        Row {
                             if (task.dueDate != null) {
+                                val date = LocalDate.parse(task.dueDate, DateTimeFormatter.ISO_LOCAL_DATE)
+                                val formattedDate = date.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.DateRange, contentDescription = "Due date")
-                                    Text("${task.dueDate}")
+                                    Icon(Icons.Default.Notifications, contentDescription = "Due date and time")
+                                    Text(" $formattedDate")
                                 }
                             }
                             if (task.dueTime != null) {
+                                val time = LocalTime.parse(task.dueTime, DateTimeFormatter.ISO_LOCAL_TIME)
+                                val formattedTime = time.format(DateTimeFormatter.ofPattern("HH:mm"))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Notifications, contentDescription = "Due time")
-                                    Text("${task.dueTime}")
+                                    Text(", $formattedTime")
                                 }
                             }
                         }
@@ -176,7 +179,6 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, mainViewModel: Mai
                 }
             }
         }
-
     }
 }
 
