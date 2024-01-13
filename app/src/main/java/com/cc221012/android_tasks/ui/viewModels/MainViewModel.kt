@@ -17,13 +17,11 @@ import java.time.format.DateTimeFormatter
 
 class MainViewModel(private val dao: TaskDao): ViewModel() {
 
-    // necessary variables for state
     private val _taskState = MutableStateFlow(Task("", null, false, null, null, false))
     val taskState: StateFlow<Task> = _taskState.asStateFlow()
     private val _taskListState = MutableStateFlow(MainViewState())
     val tasksListState: StateFlow<MainViewState> = _taskListState.asStateFlow()
 
-    // CRUD Operations to be called from Dao
 
 
     fun createTask(taskName: String, taskDescription: String?, dueDate: LocalDate?, dueTime: LocalTime?) {
@@ -100,9 +98,6 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
     }
 
 
-//    fun updateSelectedTab(tab: Tab) {
-//        _taskListState.value = _taskListState.value.copy(selectedTab = tab.route)
-//    }
 
     fun showNewTaskWindow() {
         _taskListState.value = _taskListState.value.copy(newTaskWindowOpened = true)

@@ -7,7 +7,7 @@ import com.cc221012.android_tasks.models.Converters
 
 
 @Database(entities = [Task::class], version = 1)
-@TypeConverters(Converters::class) // Whenever Room sees the Datatypes it should convert, it does so
+@TypeConverters(Converters::class)
 abstract class TasksDatabase : RoomDatabase() {
     abstract val dao: TaskDao
 }
