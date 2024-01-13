@@ -2,9 +2,6 @@ package com.cc221012.android_tasks.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
 
 
 @Entity (tableName = "tasks")
