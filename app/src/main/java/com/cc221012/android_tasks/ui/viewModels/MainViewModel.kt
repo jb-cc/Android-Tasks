@@ -13,34 +13,59 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 class MainViewModel(private val dao: TaskDao): ViewModel() {
 
     // necessary variables for state
-    private val _taskState = MutableStateFlow(Task("", null, false, null, false, null, null))
+    private val _taskState = MutableStateFlow(Task("", null, false, null, null, false))
     val taskState: StateFlow<Task> = _taskState.asStateFlow()
     private val _taskListState = MutableStateFlow(MainViewState())
     val tasksListState: StateFlow<MainViewState> = _taskListState.asStateFlow()
 
     // CRUD Operations to be called from Dao
 
-    fun createTask(name: String, description: String?, dueDate: LocalDateTime?) {
+
+    fun createTask(taskName: String, taskDescription: String?, dueDate: LocalDate?, dueTime: LocalTime?) {
+        val task = Task(
+            name = taskName,
+            description = taskDescription,
+            dueDate = dueDate?.format(DateTimeFormatter.ISO_LOCAL_DATE),
+            dueTime = dueTime?.format(DateTimeFormatter.ISO_LOCAL_TIME)
+        )
         viewModelScope.launch {
-            val task = Task(name = name, description = description, dueDate = dueDate)
+            Log.d("MainViewModel", "Creating task with date: ${task.dueDate} and time: ${task.dueTime}")
             dao.createTask(task)
+            getTasks()
         }
     }
 
     fun editTask(task: Task) {
+        val updatedTask = task.copy(
+            name = task.name,
+            description = task.description,
+            dueDate = task.dueDate?.format(DateTimeFormatter.ISO_LOCAL_DATE),
+            dueTime = task.dueTime?.format(DateTimeFormatter.ISO_LOCAL_TIME)
+        )
         viewModelScope.launch {
-            dao.updateTask(task)
+            dao.updateTask(updatedTask)
             getTasks()
         }
     }
 
     fun setTaskBeingEdited(task: Task) {
+        Log.d("MainViewModel", "setTaskBeingEdited called with task: $task")
         _taskListState.value = _taskListState.value.copy(taskBeingEdited = task, editWindowOpened = true)
+        Log.d("MainViewModel", "taskListState after setTaskBeingEdited: ${_taskListState.value}")
+    }
+
+    fun showEditWindow() {
+        Log.d("MainViewModel", "showEditWindow called")
+        _taskListState.value = _taskListState.value.copy(editWindowOpened = true)
+        Log.d("MainViewModel", "taskListState after showEditWindow: ${_taskListState.value}")
     }
 
     fun hideEditWindow() {
@@ -77,17 +102,10 @@ class MainViewModel(private val dao: TaskDao): ViewModel() {
         Log.d("MainViewModel", "getTasksByCompletion | Fetched tasks: $tasks, Completion status: $isCompleted")
     }
 
-    fun getTasksByCategory(category: String){
-        viewModelScope.launch {
-            dao.getTasksByCategory(category).collect { tasks ->
-                _taskListState.value = MainViewState(tasks = tasks)
-            }
-        }
-    }
 
-    fun updateSelectedTab(tab: Tab) {
-        _taskListState.value = _taskListState.value.copy(selectedTab = tab.route)
-    }
+//    fun updateSelectedTab(tab: Tab) {
+//        _taskListState.value = _taskListState.value.copy(selectedTab = tab.route)
+//    }
 
     fun showNewTaskWindow() {
         _taskListState.value = _taskListState.value.copy(newTaskWindowOpened = true)

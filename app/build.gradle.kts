@@ -67,7 +67,10 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+    implementation ("com.google.android.material:material:1.11.0")
 
+    // datepicker
+    implementation("io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc")
     // ROOM
     implementation("androidx.room:room-ktx:2.5.2")
     ksp("androidx.room:room-compiler:2.5.0")

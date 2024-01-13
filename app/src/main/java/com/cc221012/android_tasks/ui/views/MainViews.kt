@@ -2,21 +2,29 @@ package com.cc221012.android_tasks.ui.views
 
 import android.annotation.SuppressLint
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,6 +35,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,7 +52,17 @@ import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import androidx.compose.runtime.key
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.MaterialDialogState
+import com.vanpra.composematerialdialogs.datetime.date.datepicker
+import com.vanpra.composematerialdialogs.datetime.time.timepicker
+import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 sealed class Tab(val route: String) {
     object CurrentTasks : Tab("currentTasks")
@@ -51,25 +70,36 @@ sealed class Tab(val route: String) {
 }
 
 @Composable
-fun CurrentTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task) -> Unit) {
+fun CurrentTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit, mainViewModel: MainViewModel) {
     LazyColumn {
         items(tasks.size) { index ->
-            TaskListItem(tasks[index], onCheckboxClick, onTaskClick)
+            TaskListItem(
+                task = tasks[index],
+                onCheckboxClick = onCheckboxClick,
+                mainViewModel
+            )
         }
     }
 }
 
 @Composable
-fun CompletedTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task) -> Unit) {
+fun CompletedTasksView(tasks: List<Task>, onCheckboxClick: (Task) -> Unit, mainViewModel: MainViewModel) {
     LazyColumn {
         items(tasks.size) { index ->
-            TaskListItem(tasks[index], onCheckboxClick, onTaskClick)
+            TaskListItem(
+                task = tasks[index],
+                onCheckboxClick = onCheckboxClick,
+                mainViewModel
+            )
         }
     }
 }
 
+
 @Composable
-fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task) -> Unit) {
+fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, mainViewModel: MainViewModel) {
+
+
     val coroutineScope = rememberCoroutineScope()
     var isChecked by remember(task.id) { mutableStateOf(task.isCompleted) }
 
@@ -88,7 +118,9 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clickable { onTaskClick(task) },
+                .clickable { mainViewModel.setTaskBeingEdited(task)
+                    mainViewModel.hideNewTaskWindow() // Hide the new task window
+                    mainViewModel.showEditWindow() },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
@@ -112,6 +144,8 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, onTaskClick: (Task
     }
 }
 
+
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,6 +155,7 @@ fun MainView(mainViewModel: MainViewModel) {
 
     val mainViewState by mainViewModel.tasksListState.collectAsState()
     Log.d("MainView", "MainView collecting tasksListState")
+
 
     var selectedTab by rememberSaveable { mutableStateOf<String>(Tab.CurrentTasks.route) }
     Log.d("MainView", "MainViewState: $mainViewState")
@@ -134,40 +169,63 @@ fun MainView(mainViewModel: MainViewModel) {
         }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TabRow(selectedTabIndex = when (selectedTab) {
-                Tab.CurrentTasks.route -> 0
-                Tab.CompletedTasks.route -> 1
-                else -> 0
-            }) {
-                Tab(text = { Text("Current Tasks") }, selected = selectedTab == Tab.CurrentTasks.route, onClick = {
-                    selectedTab = Tab.CurrentTasks.route
-                    coroutineScope.launch {
-                        mainViewModel.getTasksByCompletion(false)
-                    }
-                })
-                Tab(text = { Text("Completed Tasks") }, selected = selectedTab == Tab.CompletedTasks.route, onClick = {
-                    selectedTab = Tab.CompletedTasks.route
-                    coroutineScope.launch {
-                        mainViewModel.getTasksByCompletion(true)
-                    }
-                })
+            TabRow(
+                selectedTabIndex = when (selectedTab) {
+                    Tab.CurrentTasks.route -> 0
+                    Tab.CompletedTasks.route -> 1
+                    else -> 0
+                }
+            ) {
+                Tab(
+                    text = { Text("Current Tasks") },
+                    selected = selectedTab == Tab.CurrentTasks.route,
+                    onClick = {
+                        selectedTab = Tab.CurrentTasks.route
+                        coroutineScope.launch {
+                            mainViewModel.getTasksByCompletion(false)
+                        }
+                    })
+                Tab(
+                    text = { Text("Completed Tasks") },
+                    selected = selectedTab == Tab.CompletedTasks.route,
+                    onClick = {
+                        selectedTab = Tab.CompletedTasks.route
+                        coroutineScope.launch {
+                            mainViewModel.getTasksByCompletion(true)
+                        }
+                    })
             }
 
             when (selectedTab) {
-                Tab.CurrentTasks.route -> CurrentTasksView(mainViewState.tasks.filter { !it.isCompleted }, mainViewModel::updateTaskCompletionStatus, mainViewModel::setTaskBeingEdited)
-                Tab.CompletedTasks.route -> CompletedTasksView(mainViewState.tasks.filter { it.isCompleted }, mainViewModel::updateTaskCompletionStatus, mainViewModel::setTaskBeingEdited)
-                else -> {} // handle other cases
+                Tab.CurrentTasks.route -> CurrentTasksView(
+                    mainViewState.tasks.filter { !it.isCompleted },
+                    mainViewModel::updateTaskCompletionStatus,
+                    mainViewModel
+                )
+
+                Tab.CompletedTasks.route -> CompletedTasksView(
+                    mainViewState.tasks.filter { it.isCompleted },
+                    mainViewModel::updateTaskCompletionStatus,
+                    mainViewModel
+                )
             }
         }
     }
 
+
+    var dueDate by remember { mutableStateOf<LocalDate?>(null) }
+    var dueTime by remember { mutableStateOf<LocalTime?>(null) }
+    var editDueDate by remember { mutableStateOf<LocalDate?>(null) }
+    var editDueTime by remember { mutableStateOf<LocalTime?>(null) }
+
+    val dateDialogState = rememberMaterialDialogState()
+    val timeDialogState = rememberMaterialDialogState()
+
     if (mainViewState.newTaskWindowOpened) {
         Dialog(onDismissRequest = { mainViewModel.hideNewTaskWindow() }) {
-            // Replace this TODO with the content of the dialog
             Column {
                 var taskName by remember { mutableStateOf("") }
                 var taskDescription by remember { mutableStateOf("") }
-                var dueDate by remember { mutableStateOf<LocalDateTime?>(null) }
 
                 TextField(
                     value = taskName,
@@ -177,69 +235,168 @@ fun MainView(mainViewModel: MainViewModel) {
                 TextField(
                     value = taskDescription,
                     onValueChange = { taskDescription = it },
-                    label = { Text("Task Description (optional)") }
+                    label = { Text("Task Description") }
                 )
-                // TODO: Add a date picker for the due date
-                Button(onClick = {
-                    mainViewModel.createTask(taskName, taskDescription, dueDate)
-                    mainViewModel.hideNewTaskWindow()
-                }) {
-                    Text("Add Task")
+
+                Row {
+                    Row {
+                        IconButton(onClick = { dateDialogState.show() }) {
+                            Icon(Icons.Default.DateRange, contentDescription = "Pick Date")
+                        }
+                        IconButton(onClick = { timeDialogState.show() }) {
+                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pick Time")
+                        }
+                        IconButton(onClick = {
+                            mainViewModel.createTask(taskName, taskDescription, dueDate, dueTime)
+                            mainViewModel.hideNewTaskWindow()
+                        }) {
+                            Icon(Icons.Default.AddCircle, contentDescription = "Add Task")
+                        }
+                    }
                 }
-                Button(onClick = { mainViewModel.hideNewTaskWindow() }) {
-                    Text("Cancel")
+            }
+        }
+
+
+
+        MaterialDialog(
+            dialogState = dateDialogState,
+            buttons = {
+                positiveButton(text = "Ok") {
+                    dateDialogState.hide()
                 }
+                negativeButton(text = "Cancel") {
+                    dateDialogState.hide()
+                }
+            }
+        ) {
+            datepicker(
+                initialDate = LocalDate.now(),
+                title = "Pick a date",
+                allowedDateValidator = { it.isAfter(LocalDate.now().minusDays(1)) }
+            ) { date ->
+                dueDate = date
+            }
+        }
+
+        MaterialDialog(
+            dialogState = timeDialogState,
+            buttons = {
+                positiveButton(text = "Ok") {
+                    timeDialogState.hide()
+                }
+                negativeButton(text = "Cancel") {
+                    timeDialogState.hide()
+                }
+            }
+        ) {
+            timepicker(
+                initialTime = LocalTime.NOON,
+                title = "Pick a time",
+                timeRange = LocalTime.MIDNIGHT..LocalTime.MAX
+            ) { time ->
+                dueTime = time
             }
         }
     }
 
+
     if (mainViewState.editWindowOpened) {
         val taskBeingEdited = mainViewState.taskBeingEdited
         if (taskBeingEdited != null) {
+            // Set editDueDate and editDueTime to the due date and due time of the task being edited
+            editDueDate = taskBeingEdited.dueDate?.let {
+                LocalDate.parse(
+                    it,
+                    DateTimeFormatter.ISO_LOCAL_DATE
+                )
+            }
+            editDueTime = taskBeingEdited.dueTime?.let {
+                LocalTime.parse(
+                    it,
+                    DateTimeFormatter.ISO_LOCAL_TIME
+                )
+            }
+
             Dialog(onDismissRequest = { mainViewModel.hideEditWindow() }) {
+                Column {
+                    var taskName by remember { mutableStateOf(taskBeingEdited.name) }
+                    var taskDescription by remember {
+                        mutableStateOf(
+                            taskBeingEdited.description ?: ""
+                        )
+                    }
 
-                MaterialTheme{
-                    Column {
-                        var taskName by remember { mutableStateOf(taskBeingEdited.name) }
-                        var taskDescription by remember {
-                            mutableStateOf(
-                                taskBeingEdited.description ?: ""
-                            )
+                    TextField(
+                        value = taskName,
+                        onValueChange = { taskName = it },
+                        label = { Text("Task Name") }
+                    )
+                    TextField(
+                        value = taskDescription,
+                        onValueChange = { taskDescription = it },
+                        label = { Text("Task Description") }
+                    )
+
+                    Row {
+                        IconButton(onClick = { dateDialogState.show() }) {
+                            Icon(Icons.Default.DateRange, contentDescription = "Pick Date")
                         }
-                        var dueDate by remember { mutableStateOf(taskBeingEdited.dueDate) }
-
-                        TextField(
-                            value = taskName,
-                            onValueChange = { taskName = it },
-                            label = { Text("Task Name") }
-                        )
-                        TextField(
-                            value = taskDescription,
-                            onValueChange = { taskDescription = it },
-                            label = { Text("Task Description (optional)") }
-                        )
-                        // TODO: Add a date picker for the due date
-                        Button(onClick = {
+                        IconButton(onClick = { timeDialogState.show() }) {
+                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pick Time")
+                        }
+                        IconButton(onClick = {
                             val updatedTask = taskBeingEdited.copy(
                                 name = taskName,
                                 description = taskDescription,
-                                dueDate = dueDate
+                                dueDate = editDueDate?.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                                dueTime = editDueTime?.format(DateTimeFormatter.ISO_LOCAL_TIME)
                             )
                             mainViewModel.editTask(updatedTask)
                             mainViewModel.hideEditWindow()
                         }) {
-                            Text("Update Task")
-                        }
-                        Button(onClick = {
-                            mainViewModel.deleteTask(taskBeingEdited)
-                            mainViewModel.hideEditWindow()
-                        }) {
-                            Text("Delete Task")
-                        }
-                        Button(onClick = { mainViewModel.hideEditWindow() }) {
-                            Text("Cancel")
+                            Icon(Icons.Default.Add, contentDescription = "Update Task")
                         }
                     }
+                }
+            }
+            MaterialDialog(
+                dialogState = dateDialogState,
+                buttons = {
+                    positiveButton(text = "Ok") {
+                        dateDialogState.hide()
+                    }
+                    negativeButton(text = "Cancel") {
+                        dateDialogState.hide()
+                    }
+                }
+            ) {
+                datepicker(
+                    initialDate = editDueDate ?: LocalDate.now(),
+                    title = "Pick a date",
+                    allowedDateValidator = { it.isAfter(LocalDate.now().minusDays(1)) }
+                ) { date ->
+                    editDueDate = date
+                }
+            }
+
+            MaterialDialog(
+                dialogState = timeDialogState,
+                buttons = {
+                    positiveButton(text = "Ok") {
+                        timeDialogState.hide()
+                    }
+                    negativeButton(text = "Cancel") {
+                        timeDialogState.hide()
+                    }
+                }
+            ) {
+                timepicker(
+                    initialTime = editDueTime ?: LocalTime.NOON,
+                    title = "Pick a time",
+                    timeRange = LocalTime.MIDNIGHT..LocalTime.MAX
+                ) { time ->
+                    editDueTime = time
                 }
             }
         }
