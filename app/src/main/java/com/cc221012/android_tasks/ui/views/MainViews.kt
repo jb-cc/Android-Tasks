@@ -203,12 +203,18 @@ fun MainView(mainViewModel: MainViewModel) {
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { mainViewModel.showNewTaskWindow() }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Task")
+            FloatingActionButton(onClick = { mainViewModel.showNewTaskWindow() },
+                modifier = Modifier.width(110.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Edit, contentDescription = "Add Task")
+                    Text("Add Task")
+                }
             }
         }
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+            Text("Tasks", modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp), style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Normal))
             TabRow(
                 selectedTabIndex = when (selectedTab) {
                     Tab.CurrentTasks.route -> 0
@@ -217,23 +223,25 @@ fun MainView(mainViewModel: MainViewModel) {
                 }
             ) {
                 Tab(
-                    text = { Text("Current Tasks") },
+                    text = { Text("Current") },
                     selected = selectedTab == Tab.CurrentTasks.route,
                     onClick = {
                         selectedTab = Tab.CurrentTasks.route
                         coroutineScope.launch {
                             mainViewModel.getTasksByCompletion(false)
                         }
-                    })
+                    }
+                )
                 Tab(
-                    text = { Text("Completed Tasks") },
+                    text = { Text("Completed") },
                     selected = selectedTab == Tab.CompletedTasks.route,
                     onClick = {
                         selectedTab = Tab.CompletedTasks.route
                         coroutineScope.launch {
                             mainViewModel.getTasksByCompletion(true)
                         }
-                    })
+                    }
+                )
             }
 
             when (selectedTab) {

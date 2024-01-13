@@ -6,15 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.cc221012.android_tasks.data.Task
 import com.cc221012.android_tasks.data.TaskDao
 import com.cc221012.android_tasks.ui.state.MainViewState
-import com.cc221012.android_tasks.ui.views.Tab
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
