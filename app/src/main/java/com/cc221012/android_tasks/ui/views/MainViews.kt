@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -356,6 +357,12 @@ fun MainView(mainViewModel: MainViewModel) {
                             mainViewModel.hideEditWindow()
                         }) {
                             Icon(Icons.Default.Add, contentDescription = "Update Task")
+                        }
+                        IconButton(onClick = {
+                            mainViewModel.deleteTask(taskBeingEdited)
+                            mainViewModel.hideEditWindow()
+                        }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete Task")
                         }
                     }
                 }
