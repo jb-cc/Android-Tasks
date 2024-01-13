@@ -115,13 +115,16 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, mainViewModel: Mai
             }
         }
 
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .clickable { mainViewModel.setTaskBeingEdited(task)
-                    mainViewModel.hideNewTaskWindow() // Hide the new task window
-                    mainViewModel.showEditWindow() },
+                .clickable {
+                    mainViewModel.setTaskBeingEdited(task)
+                    mainViewModel.hideNewTaskWindow()
+                    mainViewModel.showEditWindow()
+                },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
@@ -132,6 +135,12 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, mainViewModel: Mai
                 Text(task.name)
                 if (task.description != null) {
                     Text(task.description)
+                }
+                if (task.dueDate != null) {
+                    Text("Due date: ${task.dueDate}")
+                }
+                if (task.dueTime != null) {
+                    Text("Due time: ${task.dueTime}")
                 }
             }
             Checkbox(
