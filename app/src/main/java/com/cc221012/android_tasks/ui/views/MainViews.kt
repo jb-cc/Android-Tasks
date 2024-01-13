@@ -3,8 +3,10 @@ package com.cc221012.android_tasks.ui.views
 import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,12 +16,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,7 +58,11 @@ import java.time.LocalDateTime
 import androidx.compose.runtime.key
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.MaterialDialogState
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
@@ -127,22 +135,6 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, mainViewModel: Mai
                 },
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                Text(task.name)
-                if (task.description != null) {
-                    Text(task.description)
-                }
-                if (task.dueDate != null) {
-                    Text("Due date: ${task.dueDate}")
-                }
-                if (task.dueTime != null) {
-                    Text("Due time: ${task.dueTime}")
-                }
-            }
             Checkbox(
                 checked = isChecked,
                 onCheckedChange = { newIsChecked ->
@@ -150,7 +142,41 @@ fun TaskListItem(task: Task, onCheckboxClick: (Task) -> Unit, mainViewModel: Mai
                     Log.d("MainView", "Checkbox clicked, new value: $newIsChecked")
                 }
             )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                Text(task.name, style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold))
+                if (task.description != null) {
+                    Text(task.description, style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Light))
+                }
+                if (task.dueDate != null || task.dueTime != null) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(10.dp))
+                            .padding(4.dp)
+                    ) {
+                        Column {
+                            if (task.dueDate != null) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.DateRange, contentDescription = "Due date")
+                                    Text("${task.dueDate}")
+                                }
+                            }
+                            if (task.dueTime != null) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.Notifications, contentDescription = "Due time")
+                                    Text("${task.dueTime}")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+
     }
 }
 
@@ -254,7 +280,7 @@ fun MainView(mainViewModel: MainViewModel) {
                             Icon(Icons.Default.DateRange, contentDescription = "Pick Date")
                         }
                         IconButton(onClick = { timeDialogState.show() }) {
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pick Time")
+                            Icon(Icons.Default.Notifications, contentDescription = "Pick Time")
                         }
                         IconButton(onClick = {
                             mainViewModel.createTask(taskName, taskDescription, dueDate, dueTime)
@@ -353,7 +379,7 @@ fun MainView(mainViewModel: MainViewModel) {
                             Icon(Icons.Default.DateRange, contentDescription = "Pick Date")
                         }
                         IconButton(onClick = { timeDialogState.show() }) {
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Pick Time")
+                            Icon(Icons.Default.Notifications, contentDescription = "Pick Time")
                         }
                         IconButton(onClick = {
                             val updatedTask = taskBeingEdited.copy(
