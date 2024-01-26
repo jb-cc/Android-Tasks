@@ -1,4 +1,6 @@
-# This is my Project for the Mobile Coding course of the winter semester 2023. It is a basic To-Do App. 
+# Android-Tasks
+
+## This is my Project for the Mobile Coding course of the winter semester 2023. It is a basic To-Do App. 
 
 ## How to install:
 
