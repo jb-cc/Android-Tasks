@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
@@ -286,7 +285,7 @@ fun MainView(mainViewModel: MainViewModel) {
                             mainViewModel.createTask(taskName, taskDescription, dueDate, dueTime)
                             mainViewModel.hideNewTaskWindow()
                         }) {
-                            Icon(Icons.Default.AddCircle, contentDescription = "Add Task")
+                            Icon(Icons.Default.Done, contentDescription = "Add Task")
                         }
                     }
                 }
