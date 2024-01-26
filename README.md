@@ -2,7 +2,7 @@
 
 ## How to install:
 
----
+
 
 Go to this link, the download should start automatically.
 
@@ -18,7 +18,7 @@ git clone https://github.com/jb-cc/Android-Tasks.git
 
 ## How to use
 
----
+
 
 It is a basic to do app, you can
 
@@ -29,7 +29,7 @@ It is a basic to do app, you can
 
 ## Contact
 
----
+
 
 if anything still does not work, contact me at:
 
